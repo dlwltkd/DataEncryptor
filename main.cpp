@@ -1,65 +1,73 @@
-#include <iostream> 
+#include <iostream>
 #include <fstream>
 #include <string>
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
+#include <random>
+#include <limits>
 
+const char XOR_SECRET = 42;
 
 std::string encrypt(const std::string& text, const std::string& key);
 std::string deEncrypt(const std::string& encrypted, const std::string& key);
 std::string generateKey(int length);
-const char XOR_SECRET = 42;
 
 int main() {
-    
-   
-    std::string unEncryptedData;
-    std::cout << "Welcome to data encryptor.\nTo encrypt: Press 1.\nTo decrypt: press 2:\n";\
+    std::cout << "Welcome to data encryptor.\nTo encrypt: Press 1.\nTo decrypt: Press 2.\n";
     int choice;
     std::cin >> choice;
-    std::cout << std::endl;
-    while (choice == 1)
-    {
-    std::cout << "Enter name of file to contain data encryption(include .txt...):\n";
-    std::string fileName;
-    std::cin >> fileName;
-    std::ofstream outFile(fileName);
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear buffer
 
-    std::cout << "Enter Data to be encrypted:\n";
-    std::getline(std::cin, unEncryptedData);
-    
-    std::srand(std::time(nullptr));
-    int randKeyLength = (std::rand() % 29) + 10;
-    std::string key = generateKey(randKeyLength);
-    std::cout << "This is your key(do not share): \n" << key << std::endl;
-    
-    std::string encryptedData = encrypt(unEncryptedData, key);
-    outFile << encryptedData;
-    std::cout << "would you like to decrypt (press 2) or geep going (press 1)?";
-    std::cin >> choice;
-    }
-    while (choice == 2) {
-    std::cout << "Welcome to decrytor.\nEnter Encrypted text:\n";
-    std::string text;
-    std::cin >> text;
-    std::cout << "Enter key:\n";
-    std::string key;
-    std::cin >> key;
-    std::cout << "Your decrypted message is:";
-    std::cout << deEncrypt(text,key);
-    std::cout << "Input(1) Output(2): ";
-    std::cin >> choice;
-    std::cout << std::endl;
+    while (choice == 1) {
+        std::cout << "Enter name of file to contain data encryption (include .txt):\n";
+        std::string fileName;
+        std::getline(std::cin, fileName);
+        std::ofstream outFile(fileName);
+
+        if (!outFile.is_open()) {
+            std::cerr << "Error: Unable to open file '" << fileName << "'.\n";
+            continue;
         }
 
+        std::cout << "Enter data to be encrypted:\n";
+        std::string unEncryptedData;
+        std::getline(std::cin, unEncryptedData);
 
+        std::string key = generateKey((std::rand() % 29) + 10);
+        std::cout << "This is your key (do not share): \n" << key << std::endl;
 
+        std::string encryptedData = encrypt(unEncryptedData, key);
+        outFile << encryptedData;
+        outFile.close();
 
+        std::cout << "Data encrypted and saved to '" << fileName << "'.\n";
+        std::cout << "Would you like to decrypt (press 2) or encrypt another (press 1)?\n";
+        std::cin >> choice;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear buffer
+    }
+
+    while (choice == 2) {
+        std::cout << "Welcome to decrytor.\nEnter encrypted text:\n";
+        std::string text;
+        std::cin >> text;
+        std::cout << "Enter key:\n";
+        std::string key;
+        std::cin >> key;
+
+        std::string decryptedData = deEncrypt(text, key);
+        std::cout << "Your decrypted message is: " << decryptedData << "\n";
+
+        std::cout << "To encrypt again (press 1) or decrypt more (press 2): ";
+        std::cin >> choice;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear buffer
+    }
 
     return 0;
-
 }
+
+// Encryption and decryption functions are unchanged.
+
 
 
 std::string encrypt(const std::string& text, const std::string& key){
